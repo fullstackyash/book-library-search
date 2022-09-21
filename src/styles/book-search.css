@@ -1,0 +1,117 @@
+/* .book_search_filters .filter_row {
+    display: grid;   
+    gap: 4px;
+    grid-auto-flow: column;
+    margin-bottom: 22px;
+}
+ */
+.book_search_filters .filter_row input, .book_search_filters .filter_row select {
+    display: inline-block;
+    width: 100%;
+    padding-left: 10px;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+.book_search_filters .filter_row label {
+   min-width: 150px;
+
+}    
+
+
+.book_search_filters .filter-item  {   
+    width: 50%;
+    padding: 0.5rem;
+    display: flex;
+}
+
+.book_search_filters .filter_row {
+    display: flex;
+}
+
+body .book_search_filters {
+    max-width: 1100px;
+}
+
+button#search_book {
+    width: 200px;
+    font-size: 18px;
+    height: 50px;
+    background-color: #217bf7;
+    color: #ffffff;
+    border: none;
+    margin: 0px auto;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+input#book_price {
+    padding: initial;
+}
+
+body .book_results{
+    max-width: 1100px;
+}
+.book_results table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.book_results  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+.book_results tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+
+
+  
+  .range {
+    --step: 100;
+    --min: 0;
+    --max: 1000;
+    width: 100%;
+    position: relative;
+  }
+  
+  
+  /* min / max labels at the edges */
+  .range::before, .range::after {
+    font: 15px monospace;
+    content: counter(x);
+    position: absolute;
+    top: 30px;
+  }
+  
+  .range::before {
+    counter-reset: x var(--min);
+    transform: translateX(-50%);
+  }
+  
+  .range::after {
+    counter-reset: x var(--max);
+    right: 0;
+    transform: translateX(50%);
+  }
+  
+  
+  .range > input {
+    width: 300px;
+    margin: 0 -6px; /* Critical adjustment */
+  }
+
+.filter-item .range input{
+    padding: unset;
+    height: 20px
+} 
+.range .price_value{
+    margin-left: 150px;
+}
+body .book_results_wrapper{
+    max-width: 1100px;
+} 
