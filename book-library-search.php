@@ -16,6 +16,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+if ( ! defined( 'BOOK_LIBRARY_SEARCH_DIR' ) ) {
+	define( 'BOOK_LIBRARY_SEARCH_DIR', rtrim( plugin_dir_path( __FILE__ ), '/' ) );
+}
+
+if ( ! defined( 'BOOK_LIBRARY_SEARCH__FILE__' ) ) {
+	define( 'BOOK_LIBRARY_SEARCH__FILE__', __FILE__ );
+}
+
 require BOOK_LIBRARY_SEARCH_DIR . '/includes/constants.php';
 require BOOK_LIBRARY_SEARCH_DIR . '/includes/admin/class-loader.php';
 require BOOK_LIBRARY_SEARCH_DIR . '/includes/admin/class-bls-book-post-type.php';
