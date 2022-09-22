@@ -287,7 +287,17 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
         </div>';
 
 		// We echo the final output.
-		echo '<div class = "bls-pagination-nav">' . wp_kses_post( $pag_container ) . '</div>';
+		echo '<div class = "bls-pagination-nav">' . wp_kses(
+			$pag_container,
+			array(
+				'li'  => array(
+					'p'     => array(),
+					'class' => array(),
+				),
+				'ul'  => array(),
+				'div' => array( 'class' => array() ),
+			)
+		) . '</div>';
 
 	}
 
@@ -374,9 +384,9 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 								<?php esc_html_e( 'Book Price($): ', 'book-library-search' ); ?>                           
 							</label>
 							<div class="range-slider flat" data-ticks-position='top'>
-								<input id="book_price_min" type="range" min="0" max="999" value="100">
+								<input id="book_price_min" type="range" min="0" max="999" value="0">
 								<output></output>
-								<input  id="book_price_max" type="range" min="0" max="1000" value="500" >
+								<input  id="book_price_max" type="range" min="0" max="1000" value="1000" >
 								<output></output>
 								<div class='range-slider__progress'></div>
 							</div>

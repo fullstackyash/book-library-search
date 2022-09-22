@@ -448,8 +448,8 @@ min-width: 200px;
 .range-slider.flat{
     --min:0;
     --max:1000;
-    --value-a:100;
-    --value-b:500;
-    --text-value-a:"100";
-    --text-value-b:"500";
+    --value-a:0;
+    --value-b:1000;
+    --text-value-a:"0";
+    --text-value-b:"1000";
 }
