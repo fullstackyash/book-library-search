@@ -30,14 +30,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     
     // selecting by querySelector
-    liveQuery('.bls-universal-pagination li.active', 'click', function(e) {     
-        
-        e.preventDefault();   
+    liveQuery('.bls-universal-pagination li.active', 'click', function(e) {       
+          
         if(e.target.classList.contains('search_book')){
             return false;
         } 
        
         if(e.target.hasAttribute('p') ){
+            e.preventDefault();
             var page = e.target.getAttribute('p');
             ajaxLoadBooks(page);
             return false;
