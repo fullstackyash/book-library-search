@@ -36,6 +36,7 @@ button#search_book {
 	margin-top: 25px;
 	margin-bottom: 15px;
     border-radius: 5px;
+    cursor: pointer;
 }
 
 input#book_price {

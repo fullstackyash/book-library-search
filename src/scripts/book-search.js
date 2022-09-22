@@ -2,12 +2,12 @@ document.addEventListener('DOMContentLoaded', function () {
   
     function ajaxLoadBooks(page) {
       var request = new XMLHttpRequest();
-      var book_name = document.getElementById('book_name').value;
-      var author_name = document.getElementById('author_name').value;
-      var publisher_name = document.getElementById('publisher_name').value;
-      var book_rating = document.getElementById('book_rating').value;
-      var book_price_min = document.getElementById('book_price_min').value;
-      var book_price_max = document.getElementById('book_price_max').value;
+      var book_name = document.getElementById('book_name')?.value;
+      var author_name = document.getElementById('author_name')?.value;
+      var publisher_name = document.getElementById('publisher_name')?.value;
+      var book_rating = document.getElementById('book_rating')?.value;
+      var book_price_min = document.getElementById('book_price_min')?.value;
+      var book_price_max = document.getElementById('book_price_max')?.value;
       
       var params = `action=bls_filter_books&_ajaxnonce=${ajaxload_params.nonce}&book_name=${book_name}&author_name=${author_name}&publisher_name=${publisher_name}&book_rating=${book_rating}&book_price_min=${book_price_min}&book_price_max=${book_price_max}&page=${page}`;
       request.open('POST', ajaxload_params.ajax_url, true); 
@@ -29,24 +29,19 @@ document.addEventListener('DOMContentLoaded', function () {
         ajaxLoadBooks(page);
     });
     
-    // selecting by querySelector demo
-    liveQuery('.bls-universal-pagination li.active', 'click', function(e) {
-
+    // selecting by querySelector
+    liveQuery('.bls-universal-pagination li.active', 'click', function(e) {     
         
-        console.log(e.target);  
         e.preventDefault();   
         if(e.target.classList.contains('search_book')){
             return false;
         } 
-
-       //document.querySelectorAll('.bls-universal-pagination li.active').forEach(el => {
+       
         if(e.target.hasAttribute('p') ){
             var page = e.target.getAttribute('p');
             ajaxLoadBooks(page);
             return false;
-        }    
-     // });
-       
+        }       
     });
 
     // selecting by querySelector
@@ -81,12 +76,9 @@ document.addEventListener('DOMContentLoaded', function () {
     book_price_min_slider.oninput = function() {
         var book_price_min_slider_val = this.value;        
         var book_price_max_slider_val = document.getElementById("book_price_max").value;
-
         this.parentNode.style.setProperty('--value-a',book_price_min_slider_val);
-        this.parentNode.style.setProperty('--text-value-a', JSON.stringify(book_price_min_slider_val));
-       
-        if(parseInt(book_price_min_slider_val) >= parseInt(book_price_max_slider_val)){
-            console.log('maximum');
+        this.parentNode.style.setProperty('--text-value-a', JSON.stringify(book_price_min_slider_val));       
+        if(parseInt(book_price_min_slider_val) >= parseInt(book_price_max_slider_val)){            
             book_price_min_slider.value = book_price_max_slider_val;
             this.parentNode.style.setProperty('--value-a', book_price_min_slider.value);
             this.parentNode.style.setProperty('--text-value-a', JSON.stringify(book_price_min_slider.value));
@@ -98,26 +90,16 @@ document.addEventListener('DOMContentLoaded', function () {
     var book_price_max_slider = document.getElementById("book_price_max"); 
 
     book_price_max_slider.oninput = function() {
-
         var book_price_max_slider_val = this.value;        
         var book_price_min_slider_val = document.getElementById("book_price_min").value;
-
         this.parentNode.style.setProperty('--value-b',book_price_max_slider_val);
-        this.parentNode.style.setProperty('--text-value-b', JSON.stringify(book_price_max_slider_val));
-         
-
-         console.log('min', book_price_min_slider.value);
-        console.log('max', book_price_max_slider.value);
-        if(parseInt(book_price_max_slider_val) <= parseInt(book_price_min_slider_val)){
-            //book_price_max_slider.setAttribute('min',book_price_min_slider.value );
-            console.log('minimum');
+        this.parentNode.style.setProperty('--text-value-b', JSON.stringify(book_price_max_slider_val));        
+        if(parseInt(book_price_max_slider_val) <= parseInt(book_price_min_slider_val)){                     
             book_price_max_slider.value = book_price_min_slider.value;
             this.parentNode.style.setProperty('--value-b', book_price_max_slider.value);
             this.parentNode.style.setProperty('--text-value-b', JSON.stringify(book_price_max_slider.value));
         }
-    }
-
-     
+    }     
 
   });
   

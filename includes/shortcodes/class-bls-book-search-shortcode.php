@@ -331,9 +331,9 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 							<label for="book_name"><?php esc_html_e( 'Book Name:', 'book-library-search' ); ?></label>
 							<input type="text" id="book_name" name="book_name">
 						</div>
+                        <?php if ( ! empty( $authors ) ) : ?>    
 						<div class="filter-item">
-							<label for="author_name"><?php esc_html_e( 'Author:', 'book-library-search' ); ?></label>
-							<?php if ( ! empty( $authors ) ) : ?>                        
+							<label for="author_name"><?php esc_html_e( 'Author:', 'book-library-search' ); ?></label>			                    
 							<select name="author_name" id="author_name">
 								<option value="" > <?php esc_html_e( 'Select', 'book-library-search' ); ?> </option>
 								<?php
@@ -344,14 +344,15 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 								}
 								?>
 							   
-							</select>
-							<?php endif; ?>
+							</select>							
 						</div>
+                        <?php endif; ?>
 					</div>
 					<div class="filter_row">
+                        <?php if ( ! empty( $publishers ) ) : ?> 
 						<div class="filter-item">
 							<label for="publisher_name"><?php esc_html_e( 'Publisher:', 'book-library-search' ); ?></label>
-							<?php if ( ! empty( $publishers ) ) : ?>                        
+							                       
 							<select name="publisher_name" id="publisher_name">
 								<option value="" > <?php esc_html_e( 'Select', 'book-library-search' ); ?> </option>
 								<?php
@@ -362,9 +363,9 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 								}
 								?>
 							   
-							</select>
-							<?php endif; ?>
+							</select>							
 						</div>
+                        <?php endif; ?>
 						<div class="filter-item">
 							<label for="book_rating"><?php esc_html_e( 'Rating:', 'book-library-search' ); ?></label>                       
 							<select name="book_rating" id="book_rating">
