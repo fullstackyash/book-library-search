@@ -15,7 +15,7 @@ if ( ! defined( 'BOOK_POST_TYPE' ) ) {
 }
 
 if ( ! defined( 'AUTHOR_TAXONOMY' ) ) {
-	define( 'AUTHOR_TAXONOMY', 'author' );
+	define( 'AUTHOR_TAXONOMY', 'book_author' );
 }
 
 if ( ! defined( 'PUBLISHER_TAXONOMY' ) ) {

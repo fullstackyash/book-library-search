@@ -41,7 +41,6 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 		?>
 		</div>
 		<?php
-		wp_enqueue_style( 'book-search-style' );
 		wp_enqueue_script( 'book-search-script' );
 		return ob_get_clean();
 	}
@@ -54,20 +53,33 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 	 */
 	public function bls_book_search_render_results() {
 
-		$args = array(
-			'post_type' => BOOK_POST_TYPE,
-		);
-
 		if ( ! empty( $_POST ) && ! isset( $_POST['_ajaxnonce'] ) && ! wp_verify_nonce( sanitize_key( $_POST['_ajaxnonce'] ) ) ) {
 			return false;
 		}
+
+		$page     = ! empty( $_POST['page'] ) ? filter_input( INPUT_POST, 'page', FILTER_SANITIZE_NUMBER_INT ) : 1;
+		$cur_page = $page;
+		$page     = --$page;
+		// Set the number of results to display.
+		$per_page = 10;
+		$start    = $page * $per_page;
+
+		$args = array(
+			'post_type'      => BOOK_POST_TYPE,
+			'post_status'    => 'publish',
+			'orderby'        => 'post_date',
+			'order'          => 'DESC',
+			'posts_per_page' => $per_page,
+			'offset'         => $start,
+		);
 
 		if ( ! empty( $_POST ) ) {
 			$book_name      = filter_input( INPUT_POST, 'book_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			$author_name    = filter_input( INPUT_POST, 'author_name', FILTER_SANITIZE_NUMBER_INT );
 			$publisher_name = filter_input( INPUT_POST, 'publisher_name', FILTER_SANITIZE_NUMBER_INT );
 			$book_rating    = filter_input( INPUT_POST, 'book_rating', FILTER_SANITIZE_NUMBER_INT );
-			$book_price     = filter_input( INPUT_POST, 'book_price', FILTER_SANITIZE_NUMBER_INT );
+			$book_price_min = (int) filter_input( INPUT_POST, 'book_price_min', FILTER_SANITIZE_NUMBER_INT );
+			$book_price_max = (int) filter_input( INPUT_POST, 'book_price_max', FILTER_SANITIZE_NUMBER_INT );
 
 			if ( ! empty( $author_name ) || ! empty( $publisher_name ) ) {
 				$args['tax_query'] = array();
@@ -98,7 +110,7 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 				}
 			}
 
-			if ( ! empty( $book_rating ) || ! empty( $book_price ) ) {
+			if ( ! empty( $book_rating ) || ( '' !== $book_price_min || '' !== $book_price_max ) ) {
 				$args['meta_query'] = array();
 				if ( ! empty( $book_rating ) ) {
 					array_push(
@@ -111,18 +123,19 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 						)
 					);
 				}
-				if ( ! empty( $book_price ) ) {
+
+				if ( '' !== $book_price_min || '' !== $book_price_max ) {
 					array_push(
 						$args['meta_query'],
 						array(
 							'key'     => 'book_price',
-							'value'   => (int) $book_price,
+							'value'   => array( $book_price_min, $book_price_max ),
 							'type'    => 'numeric',
-							'compare' => '<=',
+							'compare' => 'BETWEEN',
 						)
 					);
 				}
-				if ( ! empty( $book_rating ) && ! empty( $book_price ) ) {
+				if ( ! empty( $book_rating ) && ( '' !== $book_price_min || '' !== $book_price_max ) ) {
 					array_push( $args['meta_query'], array( 'relation' => 'AND' ) );
 				}
 			}
@@ -136,9 +149,8 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 
 		$books_query = new WP_Query( $args );
 		$books       = $books_query->posts;
-
+		$count       = $books_query->found_posts;
 		?>
-	
 		<div class="book_results">
 			<table>               
 				<tr>
@@ -151,36 +163,131 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 				</tr>
 				
 				<?php
-				$count = 1;
-				foreach ( $books as $book ) {
-					$price           = get_post_meta( $book->ID, 'book_price', true );
-					$rating          = get_post_meta( $book->ID, 'book_rating', true );
-					$book_authors    = wp_get_post_terms( $book->ID, 'author', array( 'fields' => 'names' ) );
-					$author          = implode( ', ', $book_authors );
-					$book_publishers = wp_get_post_terms( $book->ID, 'publisher', array( 'fields' => 'names' ) );
-					$publisher       = implode( ', ', $book_publishers );
+				$book_count = 0 === $page ? $page + 1 : 1 + ( $per_page * $page );
+				if ( ! empty( $books ) ) :
+					foreach ( $books as $book ) {
+						$price           = get_post_meta( $book->ID, 'book_price', true );
+						$rating          = get_post_meta( $book->ID, 'book_rating', true );
+						$book_authors    = wp_get_post_terms( $book->ID, AUTHOR_TAXONOMY, array( 'fields' => 'names' ) );
+						$author          = implode( ', ', $book_authors );
+						$book_publishers = wp_get_post_terms( $book->ID, PUBLISHER_TAXONOMY, array( 'fields' => 'names' ) );
+						$publisher       = implode( ', ', $book_publishers );
+						?>
+						<tr>
+							<td><?php echo esc_html( $book_count ); ?></td>
+							<td><a target="_blank" href="<?php the_permalink( $book->ID ); ?>"><?php echo esc_html( $book->post_title ); ?></a></td>
+							<td><?php echo esc_html( '$' . $price ); ?></td>
+							<td><?php echo esc_html( $author ); ?></td>
+							<td><?php echo esc_html( $publisher ); ?></td>
+							<td><?php $this->bls_display_star_rating( $rating ); ?></td>
+						</tr>
+						<?php
+						$book_count ++;
+					}
+				else :
 					?>
 					<tr>
-						<td><?php echo esc_html( $count ); ?></td>
-						<td><?php echo esc_html( $book->post_title ); ?></td>
-						<td><?php echo esc_html( $price ); ?></td>
-						<td><?php echo esc_html( $author ); ?></td>
-						<td><?php echo esc_html( $publisher ); ?></td>
-						<td><?php echo esc_html( $rating ); ?></td>
+						<td>
+						<?php esc_html_e( 'No Records Found', 'book-library-search' ); ?>
+						</td>
+						<td></td><td></td><td></td><td></td><td></td>                       
 					</tr>
 					<?php
-					$count ++;
-				}
+				endif;
 				?>
-								
+						   
 			</table>
 		</div>
 		<?php
-
+		$this->bls_books_pagination( $count, $per_page, $cur_page );
 		if ( ! empty( $_POST ) ) {
 			$html = ob_get_clean();
 			wp_send_json_success( $html );
 		}
+
+	}
+
+	/**
+	 * Book Search filters.
+	 *
+	 * @param int $count total post count.
+	 * @param int $per_page total post count in a page.
+	 * @param int $cur_page current page.
+	 *
+	 * @return void
+	 */
+	public function bls_books_pagination( $count, $per_page, $cur_page ) : void {
+		$previous_btn = true;
+		$next_btn     = true;
+		$first_btn    = false;
+		$last_btn     = false;
+
+		$no_of_paginations = ceil( $count / $per_page );
+
+		if ( $cur_page >= 7 ) {
+			$start_loop = $cur_page - 3;
+			if ( $no_of_paginations > $cur_page + 3 ) {
+				$end_loop = $cur_page + 3;
+			} elseif ( $cur_page <= $no_of_paginations && $cur_page > $no_of_paginations - 6 ) {
+				$start_loop = $no_of_paginations - 6;
+				$end_loop   = $no_of_paginations;
+			} else {
+				$end_loop = $no_of_paginations;
+			}
+		} else {
+			$start_loop = 1;
+			if ( $no_of_paginations > 7 ) {
+				$end_loop = 7;
+			} else {
+				$end_loop = $no_of_paginations;
+			}
+		}
+		// Pagination Buttons logic.
+		$pag_container  = '';
+		$pag_container .= "
+        <div class='bls-universal-pagination'>
+            <ul>";
+
+		if ( $first_btn && $cur_page > 1 ) {
+			$pag_container .= "<li p='1' class='active'>First</li>";
+		} elseif ( $first_btn ) {
+			$pag_container .= "<li p='1' class='inactive'>First</li>";
+		}
+
+		if ( $previous_btn && $cur_page > 1 ) {
+			$pre            = $cur_page - 1;
+			$pag_container .= "<li p='$pre' class='active'>Previous</li>";
+		} elseif ( $previous_btn ) {
+			$pag_container .= "<li class='inactive'>Previous</li>";
+		}
+		for ( $i = $start_loop; $i <= $end_loop; $i++ ) {
+
+			if ( $cur_page == $i ) {
+				$pag_container .= "<li p='$i' class = 'selected' >{$i}</li>";
+			} else {
+				$pag_container .= "<li p='$i' class='active'>{$i}</li>";
+			}
+		}
+
+		if ( $next_btn && $cur_page < $no_of_paginations ) {
+			$nex            = $cur_page + 1;
+			$pag_container .= "<li p='$nex' class='active'>Next</li>";
+		} elseif ( $next_btn ) {
+			$pag_container .= "<li class='inactive'>Next</li>";
+		}
+
+		if ( $last_btn && $cur_page < $no_of_paginations ) {
+			$pag_container .= "<li p='$no_of_paginations' class='active'>Last</li>";
+		} elseif ( $last_btn ) {
+			$pag_container .= "<li p='$no_of_paginations' class='inactive'>Last</li>";
+		}
+
+		$pag_container = $pag_container . '
+            </ul>
+        </div>';
+
+		// We echo the final output.
+		echo '<div class = "bls-pagination-nav">' . wp_kses_post( $pag_container ) . '</div>';
 
 	}
 
@@ -193,13 +300,13 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 
 		$authors    = get_terms(
 			array(
-				'taxonomy'   => 'author',
+				'taxonomy'   => AUTHOR_TAXONOMY,
 				'hide_empty' => true,
 			)
 		);
 		$publishers = get_terms(
 			array(
-				'taxonomy'   => 'publisher',
+				'taxonomy'   => PUBLISHER_TAXONOMY,
 				'hide_empty' => true,
 			)
 		);
@@ -260,25 +367,29 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 							</select>
 						</div>
 					</div>
-					<div class="filter_row">
+					<div class="filter_row range">
 						<div class="filter-item">
 														
 							<label for="book_price">
-								<?php esc_html_e( 'Book Price: ', 'book-library-search' ); ?>                           
+								<?php esc_html_e( 'Book Price($): ', 'book-library-search' ); ?>                           
 							</label>
-						
-							<div class=range>                            
-								<input id="book_price" type="range" min="0" max="1000" step="10" value="100">
-								<div class="price_value"><span>$</span><span id="price_value"></span></div>
-							</div>                        
+							<div class="range-slider flat" data-ticks-position='top'>
+								<input id="book_price_min" type="range" min="0" max="999" value="100">
+								<output></output>
+								<input  id="book_price_max" type="range" min="0" max="1000" value="500" >
+								<output></output>
+								<div class='range-slider__progress'></div>
+							</div>
+												
 							
 						</div>
 					</div>
 					<div class="filter_row">
-						<button type="submit" class="search_book" id="search_book" >   <?php esc_html_e( 'Search ', 'book-library-search' ); ?> </button>
+						<button type="submit" class="search_book" id="search_book" p="1" >   <?php esc_html_e( 'Search ', 'book-library-search' ); ?> </button>
 					</div>   
 				</div>
 			</div>
+			
 		</form>
 		<?php
 	}
@@ -289,6 +400,7 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 	 * @return void
 	 */
 	public function bls_book_search_enqueue_assets() : void {
+
 		$plugin_name = basename( BOOK_LIBRARY_SEARCH_DIR );
 		// Enqueue style book search.
 		wp_register_style(
@@ -297,9 +409,10 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 			array(),
 			filemtime( BOOK_LIBRARY_SEARCH_DIR . '/src/styles/book-search.css' )
 		);
+		wp_enqueue_style( 'book-search-style' );
 
 		// Enqueue script for book search.
-		wp_register_script( 'book-search-script', plugins_url( $plugin_name . '/src/scripts/book-search.js' ), array(), filemtime( BOOK_LIBRARY_SEARCH_DIR . '/src/styles/book-search.js' ), true );
+		wp_register_script( 'book-search-script', plugins_url( $plugin_name . '/src/scripts/book-search.js' ), array(), filemtime( BOOK_LIBRARY_SEARCH_DIR . '/src/scripts/book-search.js' ), true );
 		wp_localize_script(
 			'book-search-script',
 			'ajaxload_params',
@@ -325,6 +438,29 @@ class  BLS_BOOK_SEARCH_SHORTCODE {
 			$where      .= ' AND ' . $wpdb->posts . '.post_title LIKE \'%' . esc_sql( $wpdb->esc_like( $search_book ) ) . '%\'';
 		}
 		return $where;
+	}
+
+	/**
+	 * Display book start rating.
+	 *
+	 * @param int $rating star rating count.
+	 *
+	 * @return void.
+	 */
+	public function bls_display_star_rating( $rating ) : void {
+		if ( ! empty( $rating ) ) {
+			for ( $i = 1; $i <= 5; $i++ ) {
+				if ( $i <= (int) $rating ) {
+					echo '<span class="dashicons dashicons-star-filled"></span>';
+				} else {
+					echo '<span class="dashicons dashicons-star-empty"></span>';
+				}
+			}
+		} else {
+			for ( $i = 1; $i <= 5; $i++ ) {
+				echo '<span class="dashicons dashicons-star-empty"></span>';
+			}
+		}
 	}
 }
 
